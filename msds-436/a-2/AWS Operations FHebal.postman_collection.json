@@ -1,0 +1,239 @@
+{
+	"info": {
+		"_postman_id": "22b9b738-3c8c-4662-aeac-c63c3abb9af2",
+		"name": "AWS Operations FHebal",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Buckets home page",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/buckets",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"buckets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Files home page",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "buckets list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/buckets/list",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"buckets",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "buckets exists positive",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/buckets/exists/box-rec-1",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"buckets",
+						"exists",
+						"box-rec-1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Files get file",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files/get?bucket_name=box-rec-1&file_name=boxer_career.txt",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files",
+						"get"
+					],
+					"query": [
+						{
+							"key": "bucket_name",
+							"value": "box-rec-1"
+						},
+						{
+							"key": "file_name",
+							"value": "boxer_career.txt"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Files query 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files/query1",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files",
+						"query1"
+					]
+				},
+				"description": "Query 1 - show top few rows of data"
+			},
+			"response": []
+		},
+		{
+			"name": "Files query 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files/query2",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files",
+						"query2"
+					]
+				},
+				"description": "Query 2 - Names of Boxers with most bouts (top 5)"
+			},
+			"response": []
+		},
+		{
+			"name": "Files query 3",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files/query3",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files",
+						"query3"
+					]
+				},
+				"description": "Query 3 - Top 10 most popular locations sorted by # of bouts"
+			},
+			"response": []
+		},
+		{
+			"name": "Files query 4",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://ec2-3-15-227-213.us-east-2.compute.amazonaws.com:5004/files/query4",
+					"protocol": "http",
+					"host": [
+						"ec2-3-15-227-213",
+						"us-east-2",
+						"compute",
+						"amazonaws",
+						"com"
+					],
+					"port": "5004",
+					"path": [
+						"files",
+						"query4"
+					]
+				},
+				"description": "Query 4 - Boxers sorted by result type"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

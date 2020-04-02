@@ -1,0 +1,124 @@
+#***********************************************
+# File: ImportPanamaDataset-Dataprep.txt
+# Desc:  Scripts to prepare the data
+# Auth: Shreenidhi Bharadwaj
+# Date: 10/15/2019
+# ALL RIGHTS RESERVED | DO NOT DISTRIBUTE
+#************************************************/
+
+# Cleanup '\' in panama_papers.nodes.address.csv & upload to S3
+python3 ../scripts/awsapi.py -fo download -b aws-big-data-project -o panama -d . -f panama_papers.nodes.address.csv
+tr -d '\\' < panama_papers.nodes.address.csv > panama_papers.nodes.address_fixed.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.nodes.address_fixed.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.nodes.address_fixed.csv
+
+# Cleanup '\' in panama_papers.nodes.officer.csv & upload to S3
+python3 ../scripts/awsapi.py -fo download -b aws-big-data-project -o panama -d . -f panama_papers.nodes.officer.csv
+tr -d '\\' < panama_papers.nodes.officer.csv > panama_papers.nodes.officer_fixed.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -fpanama_papers.nodes.officer_fixed.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.nodes.officer_fixed.csv
+
+# Create several files from single edge file, each focusing on single relationship type
+python3 ../scripts/awsapi.py -fo download -b aws-big-data-project -o panama -d . -f panama_papers.edges.csv
+
+cat panama_papers.edges.csv | head -2
+"START_ID","TYPE","END_ID","link","start_date","end_date","sourceID","valid_until"
+"10000035","registered_address","14095990","registered address","","","Panama Papers",""
+
+cat panama_papers.edges.csv | cut -d"," -f2 | sort | uniq -c
+
+# VERIFICATION : Check the results. The counts listed below should match
+ 213634 "intermediary_of"
+ 309363 "officer_of"
+ 151105 "registered_address"
+      1 "TYPE"
+
+cat panama_papers.edges.csv | head -1 > panama_papers.edges.intermediary_of.csv
+cat panama_papers.edges.csv | grep "intermediary_of" >> panama_papers.edges.intermediary_of.csv
+cat panama_papers.edges.csv | head -1 > panama_papers.edges.officer_of.csv
+cat panama_papers.edges.csv | grep "officer_of" >> panama_papers.edges.officer_of.csv
+cat panama_papers.edges.csv | head -1 > panama_papers.edges.registered_address.csv
+cat panama_papers.edges.csv | grep "registered_address" >> panama_papers.edges.registered_address.csv
+
+# VERIFICATION : Below numbers should match above counts + 1 additional header row
+cat panama_papers.edges.intermediary_of.csv | wc -l
+213635
+cat panama_papers.edges.officer_of.csv | wc -l
+309364
+cat panama_papers.edges.registered_address.csv | wc -l
+151106
+
+#  Upload newly generated files to S3
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.intermediary_of.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.intermediary_of.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.officer_of.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.officer_of.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.registered_address.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.registered_address.csv
+
+# Note: Each relationship type establishes link between 2 nodes. There is no restriction that these nodes should be of certain node type. e.g. it is obvious that 'intermediary_of' relation should always be between Intermediaries & Entities and not any other node type. However 'officer_of' relation can be between Officers and either Entities, Intermediaries or Officers it selfs (Managers/Superiors). Same goes with 'registered_address' which can be between Addresses one either Entities, Intermediaries or Officers. Understanding relationship & the data is important before trying to write scripts to upload them, otherwise scripts may be slow or create incorrect relationships messing up the data
+
+# create unique list of destination nodes - list1
+cat panama_papers.edges.officer_of.csv | cut -d',' -f3 | sort | uniq > listB_officer_of_entities
+
+# create unique list of all the entities - list2
+python3 ../scripts/awsapi.py -fo download -b aws-big-data-project -o panama -d . -f panama_papers.nodes.entity.csv
+cat panama_papers.nodes.entity.csv | cut -d',' -f1 | sort | uniq > listA_entities
+
+# compare & identify items in list1 but not in list2 (i.e all the destination nodes which are not entities, which could either be intermediary or officer)
+comm listA_entities listB_officer_of_entities -1 -3 > listB_officer_of_others
+
+# VERIFICATION : check if its too big so we can split it further if needed
+cat listB_officer_of_others | wc -l
+7
+
+# since the size is small, lets just keep it as is
+# loop through each row in the file & search for them in panama_papers.edges.officer_of.csv to create new file panama_papers.edges.officer_of.others.csv
+# second grep is to filter all the rows that might find the searching values in some other columns other than intended (column 3)
+grep -f listB_officer_of_others panama_papers.edges.officer_of.csv | grep -v "shareholder" > panama_papers.edges.officer_of.others.csv
+
+# create new file panama_papers.edges.officer_of.entities.csv by skipping all the rows in panama_papers.edges.officer_of.others.csv
+cat panama_papers.edges.officer_of.csv | head -1 > panama_papers.edges.officer_of.entities.csv
+grep -v -f panama_papers.edges.officer_of.others.csv panama_papers.edges.officer_of.csv >> panama_papers.edges.officer_of.entities.csv
+
+#  Upload newly generated files to S3
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.officer_of.entities.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.officer_of.entities.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.officer_of.others.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.officer_of.others.csv
+
+# create unique list of destination nodes - list1
+cat panama_papers.edges.registered_address.csv | cut -d',' -f1 | sort | uniq > listB_registered_address_all
+
+# create unique list of all the entities - list2
+cat panama_papers.nodes.entity.csv | cut -d',' -f1 | sort | uniq > listA_entities
+
+# compare & identify Common items in list1 & list2 (i.e all the destination nodes which are in entities)
+comm listA_entities listB_registered_address_all -1 -2 | sort | uniq > tmp_list_entities
+
+# loop through each row in the file & search for them in panama_papers.edges.registered_address.csv to create new file panama_papers.edges.registered_address.entity.csv
+cat panama_papers.edges.registered_address.csv | head -1 > panama_papers.edges.registered_address.entity.csv
+fgrep -f tmp_list_entities panama_papers.edges.registered_address.csv >> panama_papers.edges.registered_address.entity.csv
+
+# create new file panama_papers.edges.registered_address.officer.csv & add a header row
+cat panama_papers.edges.registered_address.csv | head -1 > panama_papers.edges.registered_address.officer.csv
+
+# Note to compare the files, files content should be sorted
+cat panama_papers.edges.registered_address.csv | sort > panama_papers.edges.registered_address_sorted.csv
+cat panama_papers.edges.registered_address.entity.csv | sort > panama_papers.edges.registered_address.entity_sorted.csv
+
+# create new file panama_papers.edges.registered_address.officer.csv as a difference by comparing panama_papers.edges.registered_address_sorted.csv panama_papers.edges.registered_address.entity_sorted.csv
+comm panama_papers.edges.registered_address_sorted.csv panama_papers.edges.registered_address.entity_sorted.csv -2 -3 >> panama_papers.edges.registered_address.officer.csv
+
+#  Upload newly generated files to S3
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.registered_address.entity.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.registered_address.entity.csv
+python3 ../scripts/awsapi.py -fo upload -b aws-big-data-project -o panama -d . -f panama_papers.edges.registered_address.officer.csv
+python3 ../scripts/awsapi.py -fo exists -b aws-big-data-project -o panama -f panama_papers.edges.registered_address.officer.csv
+
+#  copy newly generated files to /usr/local/neo4j/import/
+cp panama_papers.edges.intermediary_of.csv /usr/local/neo4j/import/.
+cp panama_papers.edges.officer_of.entities.csv /usr/local/neo4j/import/.
+cp panama_papers.edges.officer_of.others.csv /usr/local/neo4j/import/.
+cp panama_papers.edges.registered_address.entity.csv /usr/local/neo4j/import/.
+cp panama_papers.edges.registered_address.officer.csv /usr/local/neo4j/import/.

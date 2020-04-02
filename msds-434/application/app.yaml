@@ -1,0 +1,15 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /
+  script: main.app
+- url: /.*
+  script: main.app
+  login: required
+
+env_variables:
+  MODEL_NAME: 'babyweight'
+  VERSION_NAME: 'dnn'
+  VISK: 'ya29.Iq8BtAdn8DyjDUfTjEi_ubHnS3lzChnPCGeVpaaC9FN2Bc7K1k9iD_yz2uY7qhjI4xyIoC6Htz7SeYsj-YMAXSkg1rzHIqNNwL4EGUrIc8u5oNNcqFoOTD3YRGmnPFLQtevg7rt-wpOX_THeRkrYXFpvb9ENM_ir6gQU_8ShWQMAMRYPNCKRNCG3OZ90QsB6BXjxjfjLc_UpOV9iu0kK_D-_qZmAo8yNFtjP0UfOK0srYA'
